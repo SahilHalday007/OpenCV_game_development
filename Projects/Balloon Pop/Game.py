@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import random
 import os
+import time
 
 class Balloon:
     def __init__(self, pos, path, scale=1, grid=(2, 4),
@@ -70,6 +71,9 @@ def Game():
 
     # variables
     balloons = []
+    start_time = time.time()
+    time_interval = 1
+    speed = 5
 
     # get all balloon paths
     path_balloon_folder = "../../Resources/Project - Balloon Pop/Balloons/"
@@ -83,7 +87,7 @@ def Game():
         random_scale = round(random.uniform(0.3, 0.7), 2)
 
         balloons.append(Balloon((x, y), path=os.path.join(path_balloon_folder, random_balloon_path),
-                        grid=(3, 4), scale=random_scale))
+                        grid=(3, 4), scale=random_scale, speed=speed))
 
     # main loop
     start = True
@@ -109,7 +113,11 @@ def Game():
         for balloon in balloons:
             balloon.draw(window)
 
-        generate_balloon()
+        if time.time() - start_time > time_interval:
+            time_interval = random.uniform(0.3, 0.8)
+            generate_balloon()
+            speed += 1
+            start_time = time.time()
 
         # update display
         pygame.display.update()
