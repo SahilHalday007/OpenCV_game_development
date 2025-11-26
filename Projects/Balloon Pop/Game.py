@@ -2,6 +2,8 @@ import pygame
 import Scene_manager
 import cv2
 import numpy as np
+import random
+import os
 
 class Balloon:
     def __init__(self, pos, path, scale=1, grid=(2, 4),
@@ -26,8 +28,8 @@ class Balloon:
                 if counter <= animation_frames:
                     img_crop = img.subsurface((col * width_single_frame, row * height_single_frame,
                                                width_single_frame, height_single_frame))
-
                     self.img_list.append(img_crop)
+
 
         self.img = self.img_list[0]
         self.rect_img = self.img.get_rect()
@@ -66,9 +68,22 @@ def Game():
     cap.set(3, 1280)
     cap.set(4, 720)
 
-    # balloons
-    ballon1 = Balloon((100, 300), "../../Resources/Project - Balloon Pop/Balloons/BalloonRed.png",
-                      grid=(3, 4))
+    # variables
+    balloons = []
+
+    # get all balloon paths
+    path_balloon_folder = "../../Resources/Project - Balloon Pop/Balloons/"
+    path_list_balloons = os.listdir(path_balloon_folder)
+
+    # balloon generator
+    def generate_balloon():
+        random_balloon_path = path_list_balloons[random.randint(0, len(path_list_balloons) - 1)]
+        x = random.randint(100, img.shape[1] - 100)
+        y = img.shape[0]
+        random_scale = round(random.uniform(0.3, 0.7), 2)
+
+        balloons.append(Balloon((x, y), path=os.path.join(path_balloon_folder, random_balloon_path),
+                        grid=(3, 4), scale=random_scale))
 
     # main loop
     start = True
@@ -91,8 +106,10 @@ def Game():
         frame = pygame.transform.flip(frame, True, False)
         window.blit(frame, (0, 0))
 
-        ballon1.draw(window)
+        for balloon in balloons:
+            balloon.draw(window)
 
+        generate_balloon()
 
         # update display
         pygame.display.update()
