@@ -7,6 +7,8 @@ import os
 import time
 from cvzone.HandTrackingModule import HandDetector
 import math
+from Custom_classes.Button import ButtonImg
+
 
 class Balloon:
     def __init__(self, pos, path, scale=1, grid=(2, 4),
@@ -92,6 +94,18 @@ def Game():
     # load images
     img_score = pygame.image.load("../../Resources/Project - Balloon Pop/BackgroundScore.png").convert_alpha()
 
+    # buttons
+    back_button = ButtonImg((578, 450), "../../Resources/Project - Balloon Pop/ButtonBack.png",
+                            path_hover_sound="../../Resources/Sounds/hover.mp3",
+                            path_click_sound="../../Resources/Sounds/click.mp3",
+                            scale=0.5)
+
+    # load background music
+    pygame.mixer.pre_init()
+    pygame.mixer.music.load("../../Resources/Project - Balloon Pop/BackgroundMusicGame.mp3")
+    pygame.mixer.music.set_volume(0.2)
+    pygame.mixer.music.play()
+
     # initialize opencv webcam
     cap = cv2.VideoCapture(0)
     cap.set(3, 1280)
@@ -100,6 +114,7 @@ def Game():
     # variables
     balloons = []
     start_time = time.time()
+    generator_start_time = time.time()
     time_interval = 1
     speed = 5
     score = 0
@@ -135,58 +150,70 @@ def Game():
                     Scene_manager.open_scene("Menu")
 
         # check for time remaining
-        time_remaining = int(total_time - (time.time() - start_time))
+        time_remaining = total_time - (time.time() - start_time)
 
         if time_remaining < 0:
             window.blit(img_score, (0, 0))
+            font = pygame.font.Font("../../Resources/Marcellus-Regular.ttf", 70)
+            text_score = font.render(f"Score: {score}", True, (0, 0, 200))
+            text_score_rect = text_score.get_rect(center=(1280/2, 720/2))
+            window.blit(text_score, text_score_rect)
 
-        # apply logic
-        # openCV
-        success, img = cap.read()
-        img = cv2.flip(img, 1)
-        hands, img = detector.findHands(img, draw=False, flipType=False)
+            # button to go back
+            back_button.draw(window)
+            if back_button.state == "click":
+                pygame.mixer.music.stop()
+                Scene_manager.open_scene("Menu")
 
-
-        imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        imgRGB = np.rot90(imgRGB)
-        frame = pygame.surfarray.make_surface(imgRGB).convert()
-        frame = pygame.transform.flip(frame, True, False)
-        window.blit(frame, (0, 0))
-
-        if hands:
-            hand = hands[0]
-            x, y = hand['lmList'][8][:2]
-            pygame.draw.circle(window, (0, 0, 200), (x, y), 20)
-            pygame.draw.circle(window, (200, 200, 200), (x, y), 16)
 
         else:
-            x, y = 0, 0
+            # apply logic
+            # openCV
+            success, img = cap.read()
+            img = cv2.flip(img, 1)
+            hands, img = detector.findHands(img, draw=False, flipType=False)
+
+            imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            imgRGB = np.rot90(imgRGB)
+            frame = pygame.surfarray.make_surface(imgRGB).convert()
+            frame = pygame.transform.flip(frame, True, False)
+            window.blit(frame, (0, 0))
+
+            if hands:
+                hand = hands[0]
+                x, y = hand['lmList'][8][:2]
+                pygame.draw.circle(window, (0, 0, 200), (x, y), 20)
+                pygame.draw.circle(window, (200, 200, 200), (x, y), 16)
+
+            else:
+                x, y = 0, 0
 
 
-        for i, balloon in enumerate(balloons):
-            if balloon:
-                balloon_score = balloon.check_pop(x, y)
+            for i, balloon in enumerate(balloons):
+                if balloon:
+                    balloon_score = balloon.check_pop(x, y)
 
-                if balloon_score:
-                    score += balloon_score//10
-                    balloons[i] = False
-                balloon.draw(window)
+                    if balloon_score:
+                        score += balloon_score // 10
+                        balloons[i] = False
+                    balloon.draw(window)
 
 
-        if time.time() - start_time > time_interval:
-            time_interval = random.uniform(0.3, 0.8)
-            generate_balloon()
-            speed += 1
-            start_time = time.time()
+            if time.time() - generator_start_time > time_interval:
+                time_interval = random.uniform(0.3, 0.8)
+                generate_balloon()
+                generator_start_time = time.time()
+                speed += 1
 
-        # add text for score and time
-        font = pygame.font.Font("../../Resources/Marcellus-Regular.ttf", 45)
-        text_score = font.render(f"Score: {score}", True, (200, 200, 200))
-        text_time = font.render(f"Time left: {time_remaining}", True, (200, 200, 200))
-        pygame.draw.rect(window, (200, 0, 200), (10, 10, 300, 70), border_radius=20)
-        pygame.draw.rect(window, (200, 0, 200), (950, 10, 300, 70), border_radius=20)
-        window.blit(text_score, (40, 13))
-        window.blit(text_time, (1000, 13))
+
+            # add text for score and time
+            font = pygame.font.Font("../../Resources/Marcellus-Regular.ttf", 45)
+            text_score = font.render(f"Score: {score}", True, (200, 200, 200))
+            text_time = font.render(f"Time: {int(time_remaining)}", True, (200, 200, 200))
+            pygame.draw.rect(window, (200, 0, 200), (10, 10, 300, 70), border_radius=20)
+            pygame.draw.rect(window, (200, 0, 200), (950, 10, 300, 70), border_radius=20)
+            window.blit(text_score, (40, 13))
+            window.blit(text_time, (1000, 13))
 
         # update display
         pygame.display.update()
