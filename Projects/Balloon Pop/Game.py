@@ -90,7 +90,7 @@ def Game():
     clock = pygame.time.Clock()
 
     # load images
-    img_bg = pygame.image.load("../../Resources/Project - Balloon Pop/BackgroundBalloonPop.png").convert_alpha()
+    img_score = pygame.image.load("../../Resources/Project - Balloon Pop/BackgroundScore.png").convert_alpha()
 
     # initialize opencv webcam
     cap = cv2.VideoCapture(0)
@@ -103,6 +103,7 @@ def Game():
     time_interval = 1
     speed = 5
     score = 0
+    total_time = 30
 
     # create hand detector
     detector = HandDetector(maxHands=1, detectionCon=0.8)
@@ -132,6 +133,12 @@ def Game():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
                     Scene_manager.open_scene("Menu")
+
+        # check for time remaining
+        time_remaining = int(total_time - (time.time() - start_time))
+
+        if time_remaining < 0:
+            window.blit(img_score, (0, 0))
 
         # apply logic
         # openCV
@@ -171,6 +178,15 @@ def Game():
             generate_balloon()
             speed += 1
             start_time = time.time()
+
+        # add text for score and time
+        font = pygame.font.Font("../../Resources/Marcellus-Regular.ttf", 45)
+        text_score = font.render(f"Score: {score}", True, (200, 200, 200))
+        text_time = font.render(f"Time left: {time_remaining}", True, (200, 200, 200))
+        pygame.draw.rect(window, (200, 0, 200), (10, 10, 300, 70), border_radius=20)
+        pygame.draw.rect(window, (200, 0, 200), (950, 10, 300, 70), border_radius=20)
+        window.blit(text_score, (40, 13))
+        window.blit(text_time, (1000, 13))
 
         # update display
         pygame.display.update()
