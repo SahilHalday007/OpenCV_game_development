@@ -5,10 +5,11 @@ import numpy as np
 import random
 import os
 import time
+from cvzone.HandTrackingModule import HandDetector
 
 class Balloon:
     def __init__(self, pos, path, scale=1, grid=(2, 4),
-                 animation_frames=None, animation_speed=1, speed=10):
+                 animation_frames=None, animation_speed=1, speed=10, path_sound_pop=None):
         # load images
         img = pygame.image.load(path).convert_alpha()
         width, height = img.get_size()
@@ -41,12 +42,23 @@ class Balloon:
         self.animation_speed = animation_speed
         self.is_animating = False
         self.speed = speed
+        self.path_sound_pop = path_sound_pop
+        if self.path_sound_pop:
+            self.sound_pop = pygame.mixer.Sound(self.path_sound_pop)
 
 
     def draw(self, window):
         if self.is_animating is False:
             self.rect_img.y -= self.speed
         window.blit(self.img, self.rect_img)
+
+    def check_pop(self, x, y):
+        # check for the hit
+        if self.rect_img.collidepoint(x, y) and self.is_animating is False:
+            self.is_animating = True
+            if self.path_sound_pop:
+                self.sound_pop.play()
+
 
 def Game():
     pygame.init()
@@ -75,6 +87,9 @@ def Game():
     time_interval = 1
     speed = 5
 
+    # create hand detector
+    detector = HandDetector(maxHands=1, detectionCon=0.8)
+
     # get all balloon paths
     path_balloon_folder = "../../Resources/Project - Balloon Pop/Balloons/"
     path_list_balloons = os.listdir(path_balloon_folder)
@@ -87,7 +102,7 @@ def Game():
         random_scale = round(random.uniform(0.3, 0.7), 2)
 
         balloons.append(Balloon((x, y), path=os.path.join(path_balloon_folder, random_balloon_path),
-                        grid=(3, 4), scale=random_scale, speed=speed))
+                        grid=(3, 4), scale=random_scale, speed=speed, path_sound_pop="../../Resources/Project - Balloon Pop/Pop.wav"))
 
     # main loop
     start = True
@@ -104,14 +119,29 @@ def Game():
         # apply logic
         # openCV
         success, img = cap.read()
+        img = cv2.flip(img, 1)
+        hands, img = detector.findHands(img, draw=False, flipType=False)
+
+
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         imgRGB = np.rot90(imgRGB)
         frame = pygame.surfarray.make_surface(imgRGB).convert()
         frame = pygame.transform.flip(frame, True, False)
         window.blit(frame, (0, 0))
 
+        if hands:
+            hand = hands[0]
+            x, y = hand['lmList'][8][:2]
+            pygame.draw.circle(window, (0, 0, 200), (x, y), 20)
+            pygame.draw.circle(window, (200, 200, 200), (x, y), 16)
+
+        else:
+            x, y = 0, 0
+
+
         for balloon in balloons:
             balloon.draw(window)
+            balloon.check_pop(x, y)
 
         if time.time() - start_time > time_interval:
             time_interval = random.uniform(0.3, 0.8)
