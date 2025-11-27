@@ -6,6 +6,7 @@ import random
 import os
 import time
 from cvzone.HandTrackingModule import HandDetector
+import math
 
 class Balloon:
     def __init__(self, pos, path, scale=1, grid=(2, 4),
@@ -42,6 +43,7 @@ class Balloon:
         self.animation_speed = animation_speed
         self.is_animating = False
         self.speed = speed
+        self.pop = False
         self.path_sound_pop = path_sound_pop
         if self.path_sound_pop:
             self.sound_pop = pygame.mixer.Sound(self.path_sound_pop)
@@ -58,6 +60,20 @@ class Balloon:
             self.is_animating = True
             if self.path_sound_pop:
                 self.sound_pop.play()
+
+        if self.is_animating:
+            # Loop through all the frames
+            if self.animation_count != len(self.img_list) - 1:
+                self.animation_count += 1
+                self.img = self.img_list[math.floor(self.animation_count)]
+            else:
+                self.pop = True
+
+        if self.pop:
+            return self.rect_img.y
+        else:
+            return None
+
 
 
 def Game():
@@ -86,6 +102,7 @@ def Game():
     start_time = time.time()
     time_interval = 1
     speed = 5
+    score = 0
 
     # create hand detector
     detector = HandDetector(maxHands=1, detectionCon=0.8)
@@ -139,9 +156,15 @@ def Game():
             x, y = 0, 0
 
 
-        for balloon in balloons:
-            balloon.draw(window)
-            balloon.check_pop(x, y)
+        for i, balloon in enumerate(balloons):
+            if balloon:
+                balloon_score = balloon.check_pop(x, y)
+
+                if balloon_score:
+                    score += balloon_score//10
+                    balloons[i] = False
+                balloon.draw(window)
+
 
         if time.time() - start_time > time_interval:
             time_interval = random.uniform(0.3, 0.8)
