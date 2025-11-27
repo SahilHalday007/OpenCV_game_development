@@ -2,6 +2,6 @@ import Menu, Game
 
 def open_scene(scene_name):
     if scene_name == "Menu":
-        Menu.Menu()
+        Menu.menu()
     elif scene_name == "Game":
-        Game.Game()
+        Game.game()

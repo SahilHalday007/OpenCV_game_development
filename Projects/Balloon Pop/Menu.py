@@ -3,7 +3,7 @@ import Scene_manager
 from Custom_classes.Button import ButtonImg
 
 
-def Menu():
+def menu():
     # initialize pygame
     pygame.init()
     pygame.event.clear()
@@ -58,4 +58,4 @@ def Menu():
         clock.tick(fps)
 
 if __name__ == "__main__":
-    Menu()
+    menu()
