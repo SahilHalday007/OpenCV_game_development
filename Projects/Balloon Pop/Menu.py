@@ -44,10 +44,11 @@ def Menu():
                 if event.key == pygame.K_s:
                     Scene_manager.open_scene("Game")
 
-
+        # draw the background image
         window.blit(img_bg, (0, 0))
         button_start.draw(window)
 
+        # check if button was clicked
         if button_start.state == 'click':
             pygame.mixer.music.stop()
             Scene_manager.open_scene("Game")

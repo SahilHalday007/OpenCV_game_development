@@ -168,7 +168,7 @@ def Game():
 
         else:
             # apply logic
-            # openCV
+            # openCV and hand detector
             success, img = cap.read()
             img = cv2.flip(img, 1)
             hands, img = detector.findHands(img, draw=False, flipType=False)
@@ -179,6 +179,7 @@ def Game():
             frame = pygame.transform.flip(frame, True, False)
             window.blit(frame, (0, 0))
 
+            # check for detected hands
             if hands:
                 hand = hands[0]
                 x, y = hand['lmList'][8][:2]
@@ -188,7 +189,7 @@ def Game():
             else:
                 x, y = 0, 0
 
-
+            # loop through the balloons and draw them
             for i, balloon in enumerate(balloons):
                 if balloon:
                     balloon_score = balloon.check_pop(x, y)
