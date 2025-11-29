@@ -114,7 +114,7 @@ class CameraThread:
                         self.frame = cv2.flip(img, 1)
 
     def get_frame(self):
-        """Get the latest frame (thread-safe)"""
+        """Get the latest frame"""
         with self.lock:
             return self.frame.copy() if self.frame is not None else None
 
@@ -167,7 +167,7 @@ def game():
     time_interval = 1
     speed = 5
     score = 0
-    total_time = 30
+    total_time = 40
     game_started = False
 
     # create hand detector

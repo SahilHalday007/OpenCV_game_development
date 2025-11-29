@@ -28,7 +28,7 @@ def menu():
     # load music
     pygame.mixer.pre_init()
     pygame.mixer.music.load("../../Resources/Project - Balloon Pop/BackgroundMusicMenu.mp3")
-    pygame.mixer.music.set_volume(0.1)
+    pygame.mixer.music.set_volume(0.2)
     pygame.mixer.music.play()
 
     # main loop
