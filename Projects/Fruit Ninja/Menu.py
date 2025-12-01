@@ -1,5 +1,7 @@
 import pygame
 import Scene_Manager
+from Custom_classes.Button import ButtonImg
+
 
 def menu():
     # initiate pygame
@@ -17,6 +19,11 @@ def menu():
 
     # load images
     img_bg = pygame.image.load("../../Resources/Project - Fruit Ninja/BackgroundMenu.png")
+
+    # buttons
+    start_button = ButtonImg((500, 290), "../../Resources/Project - Fruit Ninja/ButtonStart.png",
+                             path_hover_sound="../../Resources/Sounds/hover.mp3",
+                             path_click_sound="../../Resources/Sounds/click.mp3")
 
     # main loop
     start = True
