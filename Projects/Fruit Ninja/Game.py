@@ -9,7 +9,7 @@ def game():
     width, height = 1280, 720
 
     window = pygame.display.set_mode((width, height))
-    pygame.display.set_caption("My awesome game")
+    pygame.display.set_caption("Fruit Ninja")
 
     fps = 30
     clock = pygame.time.Clock()

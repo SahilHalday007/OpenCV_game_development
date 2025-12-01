@@ -33,12 +33,14 @@ def menu():
             if event.type == pygame.QUIT:
                 start = False
                 pygame.quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_s:
-                    Scene_Manager.open_scene("Game")
 
 
         window.blit(img_bg, (0, 0))
+        start_button.draw(window)
+
+        if start_button.state == "click":
+            Scene_Manager.open_scene("Game")
+
 
         # update window
         pygame.display.update()
